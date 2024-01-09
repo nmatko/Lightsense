@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Lightsense</string>
+    <string name="action_settings">Settings</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">Lightsense</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="minLux">MIN</string>
+    <string name="lux">LUX</string>
+    <string name="maxLux">MAX</string>
+    <string name="maxLight">-</string>
+    <string name="minLight">-</string>
+    <string name="lorem_ipsum">
+         Welcome to Lightsense
+    </string>
+    <string name="getLight">0</string>
+    <string name="reset">Reset</string>
+    <string name="measureFragment">Measure</string>
+    <string name="log">Log</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello log fragment</string>
+    <string name="title_activity_measure">MeasureActivity</string>
+    <string name="title_activity_logging">LoggingActivity</string>
+</resources>

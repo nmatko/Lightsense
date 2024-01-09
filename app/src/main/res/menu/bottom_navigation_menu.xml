@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/app">
+
+    <item
+        android:id="@+id/fragmentHome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:icon="@drawable/blackreset"
+        android:title="@string/measureFragment" />
+    <item
+        android:id="@+id/fragmentMeasure"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:icon="@drawable/measurefragmentnobg"
+        android:title="@string/measureFragment" />
+    <item
+        android:id="@+id/fragmentLog"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:title="@string/log"
+        android:icon="@drawable/logiconfrag"/>
+</menu>

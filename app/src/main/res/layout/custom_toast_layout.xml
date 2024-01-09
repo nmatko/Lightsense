@@ -1,0 +1,17 @@
+<!-- custom_toast_layout.xml -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="#80000000"
+    android:id="@+id/customtoast"
+    android:layout_gravity="center">
+
+        <TextView
+        android:id="@+id/textViewToast"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Button Clicked"
+        android:textColor="#FFFFFF"
+            android:padding="16dp" />
+
+    </RelativeLayout>

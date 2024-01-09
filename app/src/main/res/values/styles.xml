@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="YourAppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Other theme attributes -->
+        <item name="android:windowAnimationStyle">@style/YourActivityAnimations</item>
+    </style>
+
+    <style name="YourActivityAnimations">
+
+    </style>
+</resources>
