@@ -33,7 +33,6 @@ public class MeasureActivity extends AppCompatActivity implements SensorEventLis
     private Sensor lightSensor;
     LogFragment logFragment = new LogFragment();
 
-    HomeFragment home = new HomeFragment();
     View bottomNavigationView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -8,6 +8,8 @@
     tools:context=".LoggingActivity">
 
 
+
+
     <FrameLayout
         android:id="@+id/container"
         android:layout_width="match_parent"
@@ -15,14 +17,23 @@
         android:layout_above="@id/bottom_nav"
         android:layout_marginBottom="-9dp"
         android:background="@color/dark" >
-
-        <LinearLayout
-            android:id="@+id/logcontainer"
-            android:layout_width="match_parent"
-            android:layout_height="371dp"
-            android:layout_marginTop="70dp"
-            android:orientation="vertical"></LinearLayout>
     </FrameLayout>
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:id="@+id/logcontainer"
+                android:layout_width="match_parent"
+                android:layout_height="558dp"
+                android:layout_marginTop="70dp"
+                android:orientation="vertical">
+
+            </LinearLayout>
+
+
+        </ScrollView>
+
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/header"
@@ -68,6 +79,14 @@
         android:layout_alignParentBottom="true"
         android:background="@color/backgroundDark">
 
+
+        <Button
+            android:id="@+id/recordbutton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Record"
+            app:layout_constraintEnd_toStartOf="@+id/measurebutton"
+            app:layout_constraintStart_toEndOf="@+id/homebutton" />
 
         <ImageButton
             android:id="@+id/homebutton"
