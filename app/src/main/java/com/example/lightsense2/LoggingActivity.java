@@ -173,6 +173,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                     View templateLogView = inflater.inflate(R.layout.template_log, logContainer, false);
 
                     ImageButton openfolder = templateLogView.findViewById(R.id.openfolder);
+
                     openfolder.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -185,9 +186,9 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                         @Override
                         public void onClick(View v) {
                             if (currJson != null && currJson.exists()) {
-                                DocumentFile file = DocumentFile.fromSingleUri(LoggingActivity.this, currJson.getUri());
+
                                 Log.i("DEL", "attempting to delete");
-                                file.delete(); // Delete the file
+                                currJson.delete(); // Delete the file
                                 Intent intent = new Intent(LoggingActivity.this, LoggingActivity.class);
                                 startActivity(intent);
                             }
@@ -197,6 +198,22 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                     EditText editText =  templateLogView.findViewById(R.id.filename);
                     editText.setText(currJson.getName());
 
+                    editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                        @Override
+                        public void onFocusChange(View v, boolean hasFocus) {
+                            if (!hasFocus){
+                                String newName = editText.getText().toString();
+                                Log.i("CURR", currJson.getName());
+                                if (!newName.isEmpty() && !newName.equals(currJson.getName())) {
+                                    renameFile(LoggingActivity.this, currJson, newName);
+                                    Intent intent = new Intent(LoggingActivity.this, LoggingActivity.class);
+                                    startActivity(intent);
+                                }else{
+                                    editText.setText(currJson.getName());
+                                }
+                            }
+                        }
+                    });
 
                     logContainer.addView(templateLogView);
                     Log.i("RECORD","finished recording");
@@ -236,8 +253,11 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                         public void onFocusChange(View v, boolean hasFocus) {
                             if (!hasFocus){
                                 String newName = editText.getText().toString();
+                                Log.i("OLDFILE", file.getParentFile().getName());
                                 if (!newName.isEmpty() && !newName.equals(file.getName())) {
                                     renameFile(LoggingActivity.this, file, newName);
+                                    Intent intent = new Intent(LoggingActivity.this, LoggingActivity.class);
+                                    startActivity(intent);
                                 }else{
                                     editText.setText(file.getName());
                                 }
@@ -283,7 +303,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         if (file != null && file.exists()) {
             // Create a new file with the desired name in the same directory
             DocumentFile renamedFile = file.getParentFile().createFile("application/json", newFileName);
-
+            Log.i("NEWFILE", file.getName());
             if (renamedFile != null) {
                 // Copy content from the original file to the renamed file
                 try {
