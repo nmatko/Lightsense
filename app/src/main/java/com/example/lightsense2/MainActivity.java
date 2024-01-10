@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
         measureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getSupportFragmentManager().beginTransaction().replace(R.id.container,measureHome).commit();
+                //getSupportFragmentManager().beginTransaction().replace(R.id.container,measureHome).commit();
                 Intent intent = new Intent(MainActivity.this, MeasureActivity.class);
                 startActivity(intent);
             }
@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
         logbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getSupportFragmentManager().beginTransaction().replace(R.id.container,logFragment).commit();
+                //getSupportFragmentManager().beginTransaction().replace(R.id.container,logFragment).commit();
                 Intent intent = new Intent(MainActivity.this, LoggingActivity.class);
                 startActivity(intent);
             }
@@ -125,14 +125,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         SharedPreferences sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        LocalDateTime currentDateTime = LocalDateTime.now();
 
-        // Define a formatter to format the date and time
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-        // Format the current date and time using the formatter
-        String formattedDateTime = currentDateTime.format(formatter);
-        Log.i("LOG",formattedDateTime);
         Log.i("SHAREDPREF",sharedPreferences.getString("locationUri","none"));
 
         String dir = sharedPreferences.getString("locationUri","none");
@@ -161,29 +154,18 @@ public class MainActivity extends AppCompatActivity {
             Log.i("RESULT","IN result");
             if (resultData != null) {
                 uri = resultData.getData();
+                final int takeFlags = resultData.getFlags()
+                        & (Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                getContentResolver().takePersistableUriPermission(uri, takeFlags);
                 locationUri = uri;
+
                 SharedPreferences sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString("locationUri", locationUri.toString());
                 editor.apply();
 
-                DocumentFile pickedDir = DocumentFile.fromTreeUri(this.getBaseContext(), locationUri);
-                DocumentFile lightsenseFolder = pickedDir.findFile("lightsense");
 
-                if (pickedDir != null && pickedDir.exists() && pickedDir.isDirectory() && lightsenseFolder == null) {
-                    String newDirectoryName = "lightsense"; // Replace with your desired folder name
-                    DocumentFile newDir = pickedDir.createDirectory(newDirectoryName);
-
-                    if (newDir != null && newDir.exists() && newDir.isDirectory()) {
-                        Log.i("FILE","file created");
-                    } else {
-                        // Directory creation failed
-                        // Handle failure to create directory
-                    }
-                } else {
-                    // Invalid directory or directory doesn't exist
-                    // Handle this scenario
-                }
 
                 Log.i("URI", locationUri.toString());
 

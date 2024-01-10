@@ -77,7 +77,7 @@ public class MeasureActivity extends AppCompatActivity implements SensorEventLis
         logbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getSupportFragmentManager().beginTransaction().replace(R.id.container,logFragment).commit();
+               // getSupportFragmentManager().beginTransaction().replace(R.id.container,logFragment).commit();
                 Intent intent = new Intent(MeasureActivity.this, LoggingActivity.class);
                 startActivity(intent);
             }
