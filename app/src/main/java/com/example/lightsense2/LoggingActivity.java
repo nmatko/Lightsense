@@ -1,6 +1,5 @@
 package com.example.lightsense2;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,31 +11,21 @@ import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
 
-import com.google.android.material.snackbar.Snackbar;
-
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.core.view.WindowCompat;
 import androidx.documentfile.provider.DocumentFile;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
-
-import com.example.lightsense2.databinding.ActivityLoggingLightBinding;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,17 +33,17 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LoggingActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -63,6 +52,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
     Boolean record = false;
     View bottomNavigationView;
     Uri locationUri;
+    int colorCnt = 0;
     MeasureHome measureHome = new MeasureHome();
     HomeFragment home = new HomeFragment();
 
@@ -176,6 +166,39 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                     recordbutton.setText("Record");
                     recordbutton.setTextColor(Color.WHITE);
                     recordbutton.setBackgroundColor(color);
+
+                    LinearLayout logContainer = findViewById(R.id.logcontainer);
+
+                    LayoutInflater inflater = LayoutInflater.from(LoggingActivity.this);
+                    View templateLogView = inflater.inflate(R.layout.template_log, logContainer, false);
+
+                    ImageButton openfolder = templateLogView.findViewById(R.id.openfolder);
+                    openfolder.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            openFileExplorer(currJson.getUri());
+                        }
+                    });
+                    ImageButton deletefile = templateLogView.findViewById(R.id.deletefile);
+
+                    deletefile.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if (currJson != null && currJson.exists()) {
+                                DocumentFile file = DocumentFile.fromSingleUri(LoggingActivity.this, currJson.getUri());
+                                Log.i("DEL", "attempting to delete");
+                                file.delete(); // Delete the file
+                                Intent intent = new Intent(LoggingActivity.this, LoggingActivity.class);
+                                startActivity(intent);
+                            }
+                        }
+                    });
+
+                    EditText editText =  templateLogView.findViewById(R.id.filename);
+                    editText.setText(currJson.getName());
+
+
+                    logContainer.addView(templateLogView);
                     Log.i("RECORD","finished recording");
                 }
 
@@ -185,7 +208,118 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         });
         Uri locationUri = Uri.parse(sharedPreferences.getString("locationUri", "none"));
 
+        List<DocumentFile> fileList = new ArrayList<>();
 
+        // Get the external storage directory URI
+
+        DocumentFile folder = DocumentFile.fromTreeUri(this, locationUri);
+
+
+        // Check if the folder exists and is a directory
+        if (folder != null && folder.isDirectory()) {
+            // Get the list of files in the folder
+            DocumentFile[] files = folder.listFiles();
+            if (files != null && files.length > 0) {
+                for (DocumentFile file : files) {
+                    // Add each file to the list
+                    if (file.getName().contains(".json")){
+                    LinearLayout logContainer = findViewById(R.id.logcontainer);
+
+                    LayoutInflater inflater = LayoutInflater.from(LoggingActivity.this);
+                    View templateLogView = inflater.inflate(R.layout.template_log, logContainer, false);
+
+                    EditText editText =  templateLogView.findViewById(R.id.filename);
+                    editText.setText(file.getName());
+
+                    editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                        @Override
+                        public void onFocusChange(View v, boolean hasFocus) {
+                            if (!hasFocus){
+                                String newName = editText.getText().toString();
+                                if (!newName.isEmpty() && !newName.equals(file.getName())) {
+                                    renameFile(LoggingActivity.this, file, newName);
+                                }else{
+                                    editText.setText(file.getName());
+                                }
+                            }
+                        }
+                    });
+
+                    ImageButton openfolder = templateLogView.findViewById(R.id.openfolder);
+                    openfolder.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            openFileExplorer(file.getUri());
+                            Log.i("OPEN","opening file" + file.getUri().toString());
+                        }
+                    });
+                        ImageButton deletefile = templateLogView.findViewById(R.id.deletefile);
+
+                        deletefile.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                if (file != null && file.exists()) {
+                                    DocumentFile filetodel = DocumentFile.fromSingleUri(LoggingActivity.this, file.getUri());
+                                    Log.i("DEL", "attempting to delete");
+                                    filetodel.delete(); // Delete the file
+                                    Intent intent = new Intent(LoggingActivity.this, LoggingActivity.class);
+                                    startActivity(intent);
+                                }
+                            }
+                        });
+
+                    logContainer.addView(templateLogView);
+                    }
+                }
+            }
+        }
+
+
+    }
+    public static void renameFile(Context context, DocumentFile file, String newFileName) {
+        if (!newFileName.contains(".json")){
+            newFileName = newFileName + ".json";
+        }
+        if (file != null && file.exists()) {
+            // Create a new file with the desired name in the same directory
+            DocumentFile renamedFile = file.getParentFile().createFile("application/json", newFileName);
+
+            if (renamedFile != null) {
+                // Copy content from the original file to the renamed file
+                try {
+                    InputStream inputStream = context.getContentResolver().openInputStream(file.getUri());
+                    OutputStream outputStream = context.getContentResolver().openOutputStream(renamedFile.getUri());
+
+                    byte[] buffer = new byte[1024];
+                    int bytesRead;
+
+                    while ((bytesRead = inputStream.read(buffer)) > 0) {
+                        outputStream.write(buffer, 0, bytesRead);
+                    }
+
+                    inputStream.close();
+                    outputStream.close();
+
+                    // Delete the original file
+                    file.delete();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    private void openFileExplorer(Uri uri) {
+        // Convert the URI string to a URI object
+
+        // Create an intent to open the file explorer with the specified URI
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/json");
+        intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, uri);
+
+        // Start the file explorer activity
+        startActivityForResult(intent, 0); // You can use a different request code if needed
     }
 
     @Override
