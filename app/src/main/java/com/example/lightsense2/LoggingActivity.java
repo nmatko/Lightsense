@@ -136,7 +136,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                     SharedPreferences sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
 
                     try {
-                        currJson = createJSON();
+                        currJson = FileOperations.createJSON(sharedPreferences, getApplicationContext());
                         Log.i("JSONcr",currJson.getUri().toString());
                     } catch (IOException e) {
                         Log.e("JSON", "failed to create");
@@ -423,7 +423,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                 float lightValue = event.values[0];
 
                 if (currJson !=null) {
-                        appendJsonData(getApplicationContext(),String.valueOf(lightValue),formattedDateTime);
+                        FileOperations.appendJsonData(getApplicationContext(),String.valueOf(lightValue),formattedDateTime, currJson);
 
                         Log.i("WRITE", "successfull writing");
 
@@ -458,104 +458,6 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
-    public DocumentFile createJSON() throws IOException {
-        Uri jsonUri = Uri.parse(sharedPreferences.getString("locationUri", "none")+"/lightsense");
-        Log.i("JSONuri", String.valueOf(jsonUri));
-        DocumentFile parentDir = DocumentFile.fromTreeUri(getApplicationContext(),jsonUri );
-        Log.i("JSONDIR",parentDir.getUri().toString());
-        LocalDateTime currentDateTime = LocalDateTime.now();
-
-        // Define a formatter to format the date and time
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-        // Format the current date and time using the formatter
-        String formattedDateTime = currentDateTime.format(formatter);
-        Log.i("LOG",formattedDateTime);
-
-        if (parentDir != null && parentDir.exists() && parentDir.isDirectory()) {
-            // Create a new file named "data.json" within the parent directory
-            DocumentFile jsonFile = parentDir.createFile("application/json", "recording" + formattedDateTime + ".json");
-
-            if (jsonFile != null) {
-                JSONArray jsonArray = new JSONArray();
-                ParcelFileDescriptor parcelFileDescriptor = getApplicationContext().getContentResolver().openFileDescriptor(jsonFile.getUri(), "w");
-                if (parcelFileDescriptor != null) {
-                    OutputStream outputStream = new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
-                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
-
-                    // Write the JSON array to the file
-                    writer.write(jsonArray.toString());
-                    writer.flush();
-
-                    writer.close();
-                    outputStream.close();
-                    parcelFileDescriptor.close();
-                }
-
-
-                return jsonFile;
-            }
-        }
-        return parentDir;
-    }
-    public  void appendJsonData(Context context,String light, String timestamp) {
-        // Assume 'fileUri' is the URI of the JSON file obtained through SAF
-        Uri fileUri = currJson.getUri();
-
-        try {
-            // Load existing JSON content from the file
-            JSONArray jsonArray = loadExistingJsonContent(context, fileUri);
-
-            // Create new JSON data to append
-            JSONObject newData = new JSONObject();
-            newData.put("light", light);
-            newData.put("timestamp", timestamp);
-
-            // Append the new JSON data to the existing JSON array
-            jsonArray.put(newData);
-
-            // Write the updated JSON content back to the file
-            writeJsonToFile(context, fileUri, jsonArray);
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
-        }
-    }
-    private  JSONArray loadExistingJsonContent(Context context, Uri fileUri) throws IOException, JSONException {
-        JSONArray jsonArray = new JSONArray();
-
-        ParcelFileDescriptor parcelFileDescriptor = context.getContentResolver().openFileDescriptor(fileUri, "r");
-        if (parcelFileDescriptor != null) {
-            FileInputStream inputStream = new FileInputStream(parcelFileDescriptor.getFileDescriptor());
-
-            // Read existing content into JSONArray
-            StringBuilder sb = new StringBuilder();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
-            }
-            jsonArray = new JSONArray(sb.toString());
-
-            inputStream.close();
-            parcelFileDescriptor.close();
-        }
-
-        return jsonArray;
-    }
-    private static void writeJsonToFile(Context context, Uri fileUri, JSONArray jsonArray) throws IOException {
-        ParcelFileDescriptor parcelFileDescriptor = context.getContentResolver().openFileDescriptor(fileUri, "w");
-        if (parcelFileDescriptor != null) {
-            FileOutputStream outputStream = new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
-
-            // Write the updated JSON content back to the file
-            writer.write(jsonArray.toString());
-            writer.flush();
-
-            writer.close();
-            outputStream.close();
-            parcelFileDescriptor.close();
-        }
-    }
+   
 
 }
