@@ -29,6 +29,8 @@ import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 public class LoggingActivity extends AppCompatActivity implements SensorEventListener {
@@ -197,7 +199,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                             // Called to notify you that the characters within the `Editable` have changed
                             if (editable.toString().contains(".json") && !editable.toString().isEmpty() && !editable.toString().equals(currJson.getName()) && editable.length()>5){
                                 FileOperations.renameFile(getApplicationContext(), currJson, editable.toString());
-                                listFiles();
+
 
                             }
                         }
@@ -225,7 +227,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         View layout = inflater.inflate(R.layout.custom_toast_layout, findViewById(R.id.customtoast));
 
         layout.setBackgroundColor(Color.parseColor("#4e348b"));
-       
+
         Toast toast = new Toast(LoggingActivity.this);
         toast.setView(layout);
         toast.setDuration(length);
@@ -257,6 +259,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         if (folder != null && folder.isDirectory()) {
             // Get the list of files in the folder
             DocumentFile[] files = folder.listFiles();
+            Arrays.sort(files, Comparator.comparing(DocumentFile::getName));
             Log.i("FILES","loading " + files.length +  " files");
             if (files != null && files.length > 0) {
                 for (DocumentFile file : files) {
@@ -299,7 +302,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                                 // Called to notify you that the characters within the `Editable` have changed
                                 if (editable.toString().contains(".json") && !editable.toString().isEmpty() && !editable.toString().equals(file.getName())){
                                     FileOperations.renameFile(getApplicationContext(), file, editable.toString());
-                                    listFiles();
+
 
                                 }
                             }
