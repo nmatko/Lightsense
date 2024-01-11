@@ -225,7 +225,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         View layout = inflater.inflate(R.layout.custom_toast_layout, findViewById(R.id.customtoast));
 
         layout.setBackgroundColor(Color.parseColor("#4e348b"));
-
+       
         Toast toast = new Toast(LoggingActivity.this);
         toast.setView(layout);
         toast.setDuration(length);
