@@ -1,5 +1,4 @@
 package com.example.lightsense2;
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,10 +9,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
-
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -26,22 +22,10 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.documentfile.provider.DocumentFile;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -192,7 +176,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                                 String newName = editText.getText().toString();
                                 Log.i("CURR", currJson.getName());
                                 if (!newName.isEmpty() && !newName.equals(currJson.getName())) {
-                                    renameFile(getApplicationContext(), currJson, newName);
+                                    FileOperations.renameFile(getApplicationContext(), currJson, newName);
                                     Intent intent = new Intent(LoggingActivity.this, LoggingActivity.class);
                                     startActivity(intent);
                                 }else{
@@ -215,7 +199,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                         public void afterTextChanged(Editable editable) {
                             // Called to notify you that the characters within the `Editable` have changed
                             if (editable.toString().contains(".json") && !editable.toString().isEmpty() && !editable.toString().equals(currJson.getName()) && editable.length()>5){
-                                renameFile(getApplicationContext(), currJson, editable.toString());
+                                FileOperations.renameFile(getApplicationContext(), currJson, editable.toString());
                                 Intent intent = new Intent(LoggingActivity.this, LoggingActivity.class);
                                 startActivity(intent);
 
@@ -263,7 +247,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                                 String newName = editText.getText().toString();
                                 Log.i("OLDFILE", file.getParentFile().getName());
                                 if (!newName.isEmpty() && !newName.equals(file.getName())) {
-                                    renameFile(getApplicationContext(), file, newName);
+                                    FileOperations.renameFile(getApplicationContext(), file, newName);
                                     Intent intent = new Intent(LoggingActivity.this, LoggingActivity.class);
                                     startActivity(intent);
                                 }else{
@@ -286,7 +270,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                             public void afterTextChanged(Editable editable) {
                                 // Called to notify you that the characters within the `Editable` have changed
                                 if (editable.toString().contains(".json") && !editable.toString().isEmpty() && !editable.toString().equals(file.getName())){
-                                    renameFile(getApplicationContext(), file, editable.toString());
+                                    FileOperations.renameFile(getApplicationContext(), file, editable.toString());
                                     Intent intent = new Intent(LoggingActivity.this, LoggingActivity.class);
                                     startActivity(intent);
 
@@ -348,39 +332,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         toast.show();
 
     }
-    public static void renameFile(Context context, DocumentFile file, String newFileName) {
-        if (!newFileName.contains(".json")){
-            newFileName = newFileName + ".json";
-        }
-        if (file != null && file.exists()) {
-            // Create a new file with the desired name in the same directory
-            DocumentFile renamedFile = file.getParentFile().createFile("application/json", newFileName);
-            Log.i("NEWFILE", file.getName());
-            if (renamedFile != null) {
-                // Copy content from the original file to the renamed file
-                try {
-                    InputStream inputStream = context.getContentResolver().openInputStream(file.getUri());
-                    OutputStream outputStream = context.getContentResolver().openOutputStream(renamedFile.getUri());
 
-                    byte[] buffer = new byte[1024];
-                    int bytesRead;
-
-                    while ((bytesRead = inputStream.read(buffer)) > 0) {
-                        outputStream.write(buffer, 0, bytesRead);
-                    }
-
-                    inputStream.close();
-                    outputStream.close();
-
-                    // Delete the original file
-                    Log.i("DELETE", "deleting old file " + file.getName());
-                    file.delete();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
     private void openFileExplorer(Uri uri) {
         // Convert the URI string to a URI object
 
@@ -458,6 +410,6 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
-   
+
 
 }
