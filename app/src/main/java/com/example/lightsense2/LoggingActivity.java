@@ -174,7 +174,6 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                         public void onFocusChange(View v, boolean hasFocus) {
                             if (!hasFocus){
                                 String newName = editText.getText().toString();
-                                Log.i("CURR", currJson.getName());
                                 if (!newName.isEmpty() && !newName.equals(currJson.getName())) {
                                     FileOperations.renameFile(getApplicationContext(), currJson, newName);
 
