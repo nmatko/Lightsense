@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.content.Context;
 import android.content.Intent;
 
+import android.graphics.Color;
 import android.hardware.Sensor;
 
 import android.hardware.SensorManager;
@@ -82,8 +83,24 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //getSupportFragmentManager().beginTransaction().replace(R.id.container,logFragment).commit();
-                Intent intent = new Intent(MainActivity.this, LoggingActivity.class);
-                startActivity(intent);
+                SharedPreferences sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+
+                String locuri = sharedPreferences.getString("locationUri", "none");
+                if (!locuri.equals("none")) {
+                    Intent intent = new Intent(MainActivity.this, LoggingActivity.class);
+                    startActivity(intent);
+                }else {
+                    LayoutInflater inflater = getLayoutInflater();
+                    View layout = inflater.inflate(R.layout.custom_toast_layout, findViewById(R.id.customtoast));
+                    layout.setBackgroundColor(Color.parseColor("#4e348b"));
+                    Toast toast = new Toast(MainActivity.this);
+                    toast.setView(layout);
+                    toast.setDuration(Toast.LENGTH_LONG);
+                    TextView toastText = layout.findViewById(R.id.textViewToast);
+                    toastText.setText("Please set the prefered directory for storing recordings");
+
+                    toast.show();
+                }
             }
         });
         ImageButton informationbtn = findViewById(R.id.informationbutton);
@@ -95,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
 
                 LayoutInflater inflater = getLayoutInflater();
                 View layout = inflater.inflate(R.layout.custom_toast_layout, findViewById(R.id.customtoast));
+                layout.setBackgroundColor(Color.parseColor("#4e348b"));
                 Log.i("MAIN", "log");
                 String displayText="";
                 String deviceName = sharedPreferences.getString("deviceName", "exists");

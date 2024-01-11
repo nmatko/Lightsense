@@ -22,4 +22,5 @@
     <string name="hello_blank_fragment">Hello log fragment</string>
     <string name="title_activity_measure">MeasureActivity</string>
     <string name="title_activity_logging">LoggingActivity</string>
+    <string name="you_have_no_recordings_to_be_displayed_press_record_to_start_a_recording">You have no recordings to be displayed. Press record to start a recording.</string>
 </resources>

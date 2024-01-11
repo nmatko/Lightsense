@@ -3,6 +3,7 @@ package com.example.lightsense2;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -78,8 +79,22 @@ public class MeasureActivity extends AppCompatActivity implements SensorEventLis
             @Override
             public void onClick(View v) {
                // getSupportFragmentManager().beginTransaction().replace(R.id.container,logFragment).commit();
+                String locuri = sharedPreferences.getString("locationUri","none");
+                if(!locuri.equals("none")){
                 Intent intent = new Intent(MeasureActivity.this, LoggingActivity.class);
                 startActivity(intent);
+                } else {
+                    LayoutInflater inflater = getLayoutInflater();
+                    View layout = inflater.inflate(R.layout.custom_toast_layout, findViewById(R.id.customtoast));
+                    layout.setBackgroundColor(Color.parseColor("#4e348b"));
+                    Toast toast = new Toast(MeasureActivity.this);
+                    toast.setView(layout);
+                    toast.setDuration(Toast.LENGTH_LONG);
+                    TextView toastText = layout.findViewById(R.id.textViewToast);
+                    toastText.setText("Please set the preffered directory for storing recordings");
+
+                    toast.show();
+                }
             }
         });
         ImageButton informationbtn = findViewById(R.id.informationbutton);
@@ -91,6 +106,8 @@ public class MeasureActivity extends AppCompatActivity implements SensorEventLis
 
                 LayoutInflater inflater = getLayoutInflater();
                 View layout = inflater.inflate(R.layout.custom_toast_layout, findViewById(R.id.customtoast));
+
+                layout.setBackgroundColor(Color.parseColor("#4e348b"));
                 Log.i("MAIN", "log");
                 String displayText="";
                 String deviceName = sharedPreferences.getString("deviceName", "exists");

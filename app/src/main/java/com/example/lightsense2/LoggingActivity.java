@@ -15,6 +15,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -104,9 +106,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                 SharedPreferences sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
                 String exists = sharedPreferences.getString("noLightSensor", "exists");
 
-                LayoutInflater inflater = getLayoutInflater();
-                View layout = inflater.inflate(R.layout.custom_toast_layout, findViewById(R.id.customtoast));
-                Log.i("MAIN", "log");
+
                 String displayText="";
                 String deviceName = sharedPreferences.getString("deviceName", "exists");
                 String deviceType = sharedPreferences.getString("deviceType", "exists");
@@ -116,13 +116,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                 displayText = displayText + "Device type: " + deviceType+ "\n";
                 displayText = displayText + "Device vendor: " + deviceVendor + "\n";
                 System.out.println(displayText);
-                Toast toast = new Toast(LoggingActivity.this);
-                toast.setView(layout);
-                toast.setDuration(Toast.LENGTH_LONG);
-                TextView toastText = layout.findViewById(R.id.textViewToast);
-                toastText.setText(displayText);
-
-                toast.show();
+                toaster(displayText);
             }
         });
 
@@ -134,16 +128,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                 if (clickCnt%2==0){
                     locationUri = Uri.parse(sharedPreferences.getString("locationUri", "none"));
                     if(locationUri.toString().equals("none")){
-                        LayoutInflater inflater = getLayoutInflater();
-                        View layout = inflater.inflate(R.layout.custom_toast_layout, findViewById(R.id.customtoast));
-                        Toast toast = new Toast(LoggingActivity.this);
-                        toast.setView(layout);
-                        toast.setDuration(Toast.LENGTH_LONG);
-                        TextView toastText = layout.findViewById(R.id.textViewToast);
-                        toastText.setText("Please set the preffered directory for storing recordings");
-
-                        toast.show();
-                        return;
+                        toaster("Please set the preffered directory for storing recordings");
                     }
                     clickCnt++;
                     recordbutton.setText("Recording");
@@ -186,11 +171,13 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                         @Override
                         public void onClick(View v) {
                             if (currJson != null && currJson.exists()) {
-
+                                String delname = currJson.getName();
                                 Log.i("DEL", "attempting to delete");
-                                currJson.delete(); // Delete the file
-                                Intent intent = new Intent(LoggingActivity.this, LoggingActivity.class);
-                                startActivity(intent);
+                                if(currJson.delete()) { // Delete the file
+                                    toaster("File " + delname + " has successfully been deleted");
+                                    Intent intent = new Intent(LoggingActivity.this, LoggingActivity.class);
+                                    startActivity(intent);
+                                }
                             }
                         }
                     });
@@ -205,12 +192,33 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                                 String newName = editText.getText().toString();
                                 Log.i("CURR", currJson.getName());
                                 if (!newName.isEmpty() && !newName.equals(currJson.getName())) {
-                                    renameFile(LoggingActivity.this, currJson, newName);
+                                    renameFile(getApplicationContext(), currJson, newName);
                                     Intent intent = new Intent(LoggingActivity.this, LoggingActivity.class);
                                     startActivity(intent);
                                 }else{
                                     editText.setText(currJson.getName());
                                 }
+                            }
+                        }
+                    });
+                    editText.addTextChangedListener(new TextWatcher() {
+                        @Override
+                        public void beforeTextChanged(CharSequence charSequence, int start, int before, int count) {
+                            // Called to notify you that the characters within `start` and `start + before` are about to be replaced
+                        }
+                        @Override
+                        public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
+                            // Called to notify you that somewhere within `start` and `start + before` the text has been replaced with new text having length `count`
+                        }
+
+                        @Override
+                        public void afterTextChanged(Editable editable) {
+                            // Called to notify you that the characters within the `Editable` have changed
+                            if (editable.toString().contains(".json") && !editable.toString().isEmpty() && !editable.toString().equals(currJson.getName()) && editable.length()>5){
+                                renameFile(getApplicationContext(), currJson, editable.toString());
+                                Intent intent = new Intent(LoggingActivity.this, LoggingActivity.class);
+                                startActivity(intent);
+
                             }
                         }
                     });
@@ -255,7 +263,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                                 String newName = editText.getText().toString();
                                 Log.i("OLDFILE", file.getParentFile().getName());
                                 if (!newName.isEmpty() && !newName.equals(file.getName())) {
-                                    renameFile(LoggingActivity.this, file, newName);
+                                    renameFile(getApplicationContext(), file, newName);
                                     Intent intent = new Intent(LoggingActivity.this, LoggingActivity.class);
                                     startActivity(intent);
                                 }else{
@@ -264,6 +272,27 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                             }
                         }
                     });
+                        editText.addTextChangedListener(new TextWatcher() {
+                            @Override
+                            public void beforeTextChanged(CharSequence charSequence, int start, int before, int count) {
+                                // Called to notify you that the characters within `start` and `start + before` are about to be replaced
+                            }
+                            @Override
+                            public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
+                                // Called to notify you that somewhere within `start` and `start + before` the text has been replaced with new text having length `count`
+                            }
+
+                            @Override
+                            public void afterTextChanged(Editable editable) {
+                                // Called to notify you that the characters within the `Editable` have changed
+                                if (editable.toString().contains(".json") && !editable.toString().isEmpty() && !editable.toString().equals(file.getName())){
+                                    renameFile(getApplicationContext(), file, editable.toString());
+                                    Intent intent = new Intent(LoggingActivity.this, LoggingActivity.class);
+                                    startActivity(intent);
+
+                                }
+                            }
+                        });
 
                     ImageButton openfolder = templateLogView.findViewById(R.id.openfolder);
                     openfolder.setOnClickListener(new View.OnClickListener() {
@@ -280,10 +309,13 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                             public void onClick(View v) {
                                 if (file != null && file.exists()) {
                                     DocumentFile filetodel = DocumentFile.fromSingleUri(LoggingActivity.this, file.getUri());
+                                    String delname = filetodel.getName();
                                     Log.i("DEL", "attempting to delete");
-                                    filetodel.delete(); // Delete the file
-                                    Intent intent = new Intent(LoggingActivity.this, LoggingActivity.class);
-                                    startActivity(intent);
+                                    if(filetodel.delete()) { // Delete the file
+                                        toaster("File " + delname + " has successfully been deleted");
+                                        Intent intent = new Intent(LoggingActivity.this, LoggingActivity.class);
+                                        startActivity(intent);
+                                    }
                                 }
                             }
                         });
@@ -291,9 +323,29 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                     logContainer.addView(templateLogView);
                     }
                 }
+            }else {
+                currJson = null;
+                toaster("You have no recordings to be displayed. Press record to start a recording.");
             }
+
         }
 
+
+    }
+    public void toaster(String msg){
+        LayoutInflater inflater = getLayoutInflater();
+
+        View layout = inflater.inflate(R.layout.custom_toast_layout, findViewById(R.id.customtoast));
+
+        layout.setBackgroundColor(Color.parseColor("#4e348b"));
+
+        Toast toast = new Toast(LoggingActivity.this);
+        toast.setView(layout);
+        toast.setDuration(Toast.LENGTH_LONG);
+        TextView toastText = layout.findViewById(R.id.textViewToast);
+        toastText.setText(msg);
+
+        toast.show();
 
     }
     public static void renameFile(Context context, DocumentFile file, String newFileName) {
@@ -321,6 +373,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                     outputStream.close();
 
                     // Delete the original file
+                    Log.i("DELETE", "deleting old file " + file.getName());
                     file.delete();
                 } catch (Exception e) {
                     e.printStackTrace();
