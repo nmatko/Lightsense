@@ -52,7 +52,7 @@
 
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_above="@+id/bottom_nav"
             android:layout_below="@+id/header"
@@ -65,8 +65,8 @@
             android:background="@color/dark">
 
                 <LinearLayout
-                    android:layout_width="419dp"
-                    android:layout_height="381dp"
+                    android:layout_width="319dp"
+                    android:layout_height="438dp"
                     android:layout_margin="10dp"
                     android:orientation="vertical"
                     app:layout_constraintBottom_toBottomOf="parent"
