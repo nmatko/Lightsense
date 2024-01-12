@@ -1,4 +1,7 @@
 package com.example.lightsense2;
+import android.animation.AnimatorSet;
+import android.animation.LayoutTransition;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -7,28 +10,36 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Message;
 import android.provider.DocumentsContract;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.documentfile.provider.DocumentFile;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+import android.os.Handler;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -53,6 +64,10 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
     private SharedPreferences sharedPreferences;
 
     private int clickCnt = 0;
+
+    private Handler handler;
+    private boolean timerRunning;
+    private long elapsedTime = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,6 +80,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
 
         ImageButton measureButton =  bottomNavigationView.findViewById(R.id.measurebutton);
+
 
         measureButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -107,6 +123,15 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
 
         Button recordbutton = findViewById(R.id.recordbutton);
 
+        handler = new Handler(new Handler.Callback() {
+            @Override
+            public boolean handleMessage(@NonNull Message msg) {
+                updateTimerText(recordbutton);
+                return true;
+            }
+        });
+
+
         recordbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -116,8 +141,8 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                         toaster("Please set the preffered directory for storing recordings",1);
                     }
                     clickCnt++;
-                    recordbutton.setText("Recording");
                     recordbutton.setBackgroundColor(Color.RED);
+                    recordbutton.setTextColor(Color.WHITE);
                     SharedPreferences sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
 
                     try {
@@ -127,17 +152,19 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                         Log.e("JSON", "failed to create");
                         throw new RuntimeException(e);
                     }
-
+                    startTimer(recordbutton);
                     Log.i("RECORD","recording");
                 }else {
                     clickCnt++;
-                    String hexColor = "#4e348b"; // This is an example hex color (orange)
+                    String hexColor = "#4e348b";
                     int color = Color.parseColor(hexColor);
                     recordbutton.setText("Record");
                     recordbutton.setTextColor(Color.WHITE);
                     recordbutton.setBackgroundColor(color);
 
                     LinearLayout logContainer = findViewById(R.id.logcontainer);
+                    LayoutTransition layoutTransition = new LayoutTransition();
+                    logContainer.setLayoutTransition(layoutTransition);
 
                     LayoutInflater inflater = LayoutInflater.from(LoggingActivity.this);
                     View templateLogView = inflater.inflate(R.layout.template_log, logContainer, false);
@@ -160,6 +187,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                                 Log.i("DEL", "attempting to delete");
                                 if(currJson.delete()) { // Delete the file
                                     toaster("File " + delname + " has successfully been deleted",0);
+                                    fadeOutToSide(templateLogView);
                                     logContainer.removeView(templateLogView);
                                 }
                             }
@@ -207,6 +235,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                     logContainer.addView(templateLogView);
                     Log.i("RECORD","finished recording");
                     //listFiles();
+                    stopTimer(recordbutton);
                 }
 
 
@@ -215,9 +244,42 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         });
         Uri locationUri = Uri.parse(sharedPreferences.getString("locationUri", "none"));
 
-        listFiles();
+        listFiles();        // Get the external storage directory URI
 
-        // Get the external storage directory URI
+    }
+    private void startTimer(Button button) {
+        timerRunning = true;
+        button.setText("Recording");
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (timerRunning) {
+                    try {
+                        Thread.sleep(500);
+                        elapsedTime += 500;
+                        handler.sendEmptyMessage(0);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
+    }
+
+    private void stopTimer(Button button) {
+        timerRunning = false;
+        button.setText("Record");
+        elapsedTime= 0;
+    }
+
+    private void updateTimerText(Button button) {
+        int seconds = (int) (elapsedTime / 1000) % 60;
+        int minutes = (int) ((elapsedTime / (1000 * 60)) % 60);
+        int hours = (int) ((elapsedTime / (1000 * 60 * 60)) % 24);
+        String timeFormatted = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+        if (timerRunning) {
+            button.setText(timeFormatted);
+        }
 
     }
     public void toaster(String msg, int length){
@@ -240,7 +302,8 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
 
 
         LinearLayout logContainer = findViewById(R.id.logcontainer);
-
+        LayoutTransition layoutTransition = new LayoutTransition();
+        logContainer.setLayoutTransition(layoutTransition);
         int childCount = logContainer.getChildCount();
 
 // Iterate through each child and remove it
@@ -326,7 +389,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                                     Log.i("DEL", "attempting to delete");
                                     if(filetodel.delete()) { // Delete the file
                                         toaster("File " + delname + " has successfully been deleted",0);
-                                        logContainer.removeView(templateLogView);
+                                        fadeOutToSide(templateLogView);
                                     }
                                 }
                             }
@@ -343,7 +406,31 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         }
 
     }
+    private void fadeOutToSide(View fadingView) {
+        // Create ObjectAnimators for alpha and translationX properties
+        ObjectAnimator fadeOut = ObjectAnimator.ofFloat(fadingView, "alpha", 1f, 0f);
+        ObjectAnimator slideOut = ObjectAnimator.ofFloat(fadingView, "translationX", 0, fadingView.getWidth());
 
+        // Combine the animations into an AnimatorSet
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet.playTogether(fadeOut, slideOut);
+        animatorSet.setDuration(1000); // Set the duration of the animation in milliseconds
+        animatorSet.addListener(new android.animation.AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(android.animation.Animator animation) {
+                super.onAnimationEnd(animation);
+
+                // Remove the view from its parent
+                ViewGroup parentView = (ViewGroup) fadingView.getParent();
+                if (parentView != null) {
+                    parentView.removeView(fadingView);
+                }
+            }
+        });
+        // Start the animation
+        animatorSet.start();
+       // logContainer.removeView(fadingView);
+    }
     private void openFileExplorer(Uri uri) {
         // Convert the URI string to a URI object
 
