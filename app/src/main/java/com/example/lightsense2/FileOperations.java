@@ -1,10 +1,11 @@
 package com.example.lightsense2;
 
+import android.content.ContentResolver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
+import android.provider.DocumentsContract;
 import android.util.Log;
 import androidx.documentfile.provider.DocumentFile;
 import org.json.JSONArray;
@@ -15,7 +16,6 @@ import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -28,38 +28,32 @@ public class FileOperations {
 
     }
 
-    public static void renameFile(Context context, DocumentFile file, String newFileName) {
-        if (!newFileName.contains(".json")){
-            newFileName = newFileName + ".json";
-        }
-        if (file != null && file.exists()) {
-            // Create a new file with the desired name in the same directory
-            DocumentFile renamedFile = file.getParentFile().createFile("application/json", newFileName);
-            Log.i("NEWFILE", file.getName());
-            if (renamedFile != null) {
-                // Copy content from the original file to the renamed file
-                try {
-                    InputStream inputStream = context.getContentResolver().openInputStream(file.getUri());
-                    OutputStream outputStream = context.getContentResolver().openOutputStream(renamedFile.getUri());
+    public static boolean renameFile(Context context, Uri fileUri, String newFileName) {
+        ContentResolver contentResolver = context.getContentResolver();
 
-                    byte[] buffer = new byte[1024];
-                    int bytesRead;
-
-                    while ((bytesRead = inputStream.read(buffer)) > 0) {
-                        outputStream.write(buffer, 0, bytesRead);
-                    }
-
-                    inputStream.close();
-                    outputStream.close();
-
-                    // Delete the original file
-                    Log.i("DELETE", "deleting old file " + file.getName());
-                    file.delete();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        try {
+            if(!newFileName.contains(".json")){
+                newFileName +=".json";
             }
+            // Get the document ID of the file
+            String documentId = DocumentsContract.getDocumentId(fileUri);
+            if(fileUri.toString().contains(newFileName)){
+                return false;
+            }
+            // Build the URI for the parent directory
+            Uri parentUri = DocumentsContract.buildDocumentUriUsingTree(fileUri, documentId);
+
+            // Rename the document (file) using DocumentsContract.renameDocument()
+            Uri newFileUri = DocumentsContract.renameDocument(contentResolver, fileUri, newFileName);
+
+
+            // Check if the file was successfully renamed
+            return newFileUri != null;
+        } catch (Exception e) {
+            e.printStackTrace(); // Handle the exception appropriately
         }
+
+        return false; // Rename operation failed
     }
     public static DocumentFile createJSON(SharedPreferences sharedPreferences, Context context) throws IOException {
         Uri jsonUri = Uri.parse(sharedPreferences.getString("locationUri", "none")+"/lightsense");
@@ -101,9 +95,9 @@ public class FileOperations {
         }
         return parentDir;
     }
-    public static   void appendJsonData(Context context,String light, String timestamp, DocumentFile currJson) {
+    public static   void appendJsonData(Context context,String light, String timestamp, Uri fileUri) {
         // Assume 'fileUri' is the URI of the JSON file obtained through SAF
-        Uri fileUri = currJson.getUri();
+
 
         try {
             // Load existing JSON content from the file
