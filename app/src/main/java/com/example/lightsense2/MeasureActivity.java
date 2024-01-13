@@ -10,7 +10,6 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
-import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -19,7 +18,6 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-
 
 import java.text.DecimalFormat;
 
@@ -32,15 +30,15 @@ public class MeasureActivity extends AppCompatActivity implements SensorEventLis
     private static final String MAX_VALUE_KEY = "maxValue";
     private static final String MIN_VALUE_KEY = "minValue";
     private Sensor lightSensor;
-    LogFragment logFragment = new LogFragment();
 
     View bottomNavigationView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.fragment_measure_home);
-        Log.i("Measure","OVJDE U CREATU");
+        Log.i("Measure", "OVJDE U CREATU");
         sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
 
         ImageButton resetbtn = findViewById(R.id.resetMinMaxBtn);
@@ -50,39 +48,38 @@ public class MeasureActivity extends AppCompatActivity implements SensorEventLis
             public void onClick(View v) {
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 TextView minVw = findViewById(R.id.textViewLight);
-                String minVal =  minVw.getText().toString();
+                String minVal = minVw.getText().toString();
                 editor.putFloat(MAX_VALUE_KEY, 0f);
                 editor.putFloat(MIN_VALUE_KEY, Float.parseFloat(minVal));
                 editor.apply();
                 setMinMaxValues();
             }
-        } );
+        });
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
         setMinMaxValues();
         bottomNavigationView = findViewById(R.id.bottom_nav);
 
-        ImageButton homebutton =  bottomNavigationView.findViewById(R.id.homebutton);
+        ImageButton homebutton = bottomNavigationView.findViewById(R.id.homebutton);
         homebutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 Intent intent = new Intent(MeasureActivity.this, MainActivity.class);
                 startActivity(intent);
-                //overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
             }
         });
-        ImageButton logbutton =  bottomNavigationView.findViewById(R.id.logbutton);
+        ImageButton logbutton = bottomNavigationView.findViewById(R.id.logbutton);
 
         logbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               // getSupportFragmentManager().beginTransaction().replace(R.id.container,logFragment).commit();
-                String locuri = sharedPreferences.getString("locationUri","none");
-                if(!locuri.equals("none")){
-                Intent intent = new Intent(MeasureActivity.this, LoggingActivity.class);
-                startActivity(intent);
+                // getSupportFragmentManager().beginTransaction().replace(R.id.container,logFragment).commit();
+                String locuri = sharedPreferences.getString("locationUri", "none");
+                if (!locuri.equals("none")) {
+                    Intent intent = new Intent(MeasureActivity.this, LoggingActivity.class);
+                    startActivity(intent);
                 } else {
                     LayoutInflater inflater = getLayoutInflater();
                     View layout = inflater.inflate(R.layout.custom_toast_layout, findViewById(R.id.customtoast));
@@ -109,13 +106,13 @@ public class MeasureActivity extends AppCompatActivity implements SensorEventLis
 
                 layout.setBackgroundColor(Color.parseColor("#4e348b"));
                 Log.i("MAIN", "log");
-                String displayText="";
+                String displayText = "";
                 String deviceName = sharedPreferences.getString("deviceName", "exists");
                 String deviceType = sharedPreferences.getString("deviceType", "exists");
                 String deviceVendor = sharedPreferences.getString("deviceVendor", "exists");
 
-                displayText = displayText + "Device name: "+ deviceName + "\n";
-                displayText = displayText + "Device type: " + deviceType+ "\n";
+                displayText = displayText + "Device name: " + deviceName + "\n";
+                displayText = displayText + "Device type: " + deviceType + "\n";
                 displayText = displayText + "Device vendor: " + deviceVendor + "\n";
                 System.out.println(displayText);
                 Toast toast = new Toast(MeasureActivity.this);
@@ -133,7 +130,7 @@ public class MeasureActivity extends AppCompatActivity implements SensorEventLis
     }
 
 
-    public void checkMinMaxValue(float value){
+    public void checkMinMaxValue(float value) {
         float storedMaxValue = sharedPreferences.getFloat(MAX_VALUE_KEY, Float.MIN_VALUE);
         float storedMinValue = sharedPreferences.getFloat(MIN_VALUE_KEY, Float.MAX_VALUE);
         if (value > storedMaxValue) {
@@ -154,7 +151,8 @@ public class MeasureActivity extends AppCompatActivity implements SensorEventLis
         }
 
     }
-    public void setMinMaxValues(){
+
+    public void setMinMaxValues() {
         float storedMaxValue = sharedPreferences.getFloat(MAX_VALUE_KEY, Float.MIN_VALUE);
         float storedMinValue = sharedPreferences.getFloat(MIN_VALUE_KEY, Float.MAX_VALUE);
 
@@ -170,13 +168,12 @@ public class MeasureActivity extends AppCompatActivity implements SensorEventLis
             float lightValue = event.values[0]; // Get the light value in lux
             TextView vw = findViewById(R.id.textViewLight);
             checkMinMaxValue(lightValue);
-            Log.i("TAG","OVDJE");
-
+            Log.i("TAG", "OVDJE");
             vw.setText(df.format(lightValue));
 
-            // Do something with the light value (e.g., display it, perform actions based on the light level)
         }
     }
+
     protected void onResume() {
         super.onResume();
         if (lightSensor != null) {
@@ -189,6 +186,7 @@ public class MeasureActivity extends AppCompatActivity implements SensorEventLis
         super.onPause();
         sensorManager.unregisterListener(this);
     }
+
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 

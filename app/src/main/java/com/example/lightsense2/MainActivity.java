@@ -1,45 +1,33 @@
 package com.example.lightsense2;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.documentfile.provider.DocumentFile;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.Context;
 import android.content.Intent;
-
 import android.graphics.Color;
 import android.hardware.Sensor;
-
 import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
-
 import android.view.View;
-
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import java.io.File;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
 
 public class MainActivity extends AppCompatActivity {
     View bottomNavigationView;
 
     Uri locationUri;
-    MeasureHome measureHome = new MeasureHome();
-    LogFragment logFragment = new LogFragment();
     HomeFragment home = new HomeFragment();
     private static final int ACCESS_URI = 1;
     private static final String PREF_NAME = "MyPrefs";
 
 
-    void setManufacturerInfo(){
+    void setManufacturerInfo() {
 
         SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         Sensor lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
@@ -57,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,10 +54,10 @@ public class MainActivity extends AppCompatActivity {
 
         setManufacturerInfo();
 
-        getSupportFragmentManager().beginTransaction().replace(R.id.container,home).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.container, home).commit();
 
 
-        ImageButton measureButton =  bottomNavigationView.findViewById(R.id.measurebutton);
+        ImageButton measureButton = bottomNavigationView.findViewById(R.id.measurebutton);
         measureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -77,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        ImageButton logbutton =  bottomNavigationView.findViewById(R.id.logbutton);
+        ImageButton logbutton = bottomNavigationView.findViewById(R.id.logbutton);
 
         logbutton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -89,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
                 if (!locuri.equals("none")) {
                     Intent intent = new Intent(MainActivity.this, LoggingActivity.class);
                     startActivity(intent);
-                }else {
+                } else {
                     LayoutInflater inflater = getLayoutInflater();
                     View layout = inflater.inflate(R.layout.custom_toast_layout, findViewById(R.id.customtoast));
                     layout.setBackgroundColor(Color.parseColor("#4e348b"));
@@ -114,13 +103,13 @@ public class MainActivity extends AppCompatActivity {
                 View layout = inflater.inflate(R.layout.custom_toast_layout, findViewById(R.id.customtoast));
                 layout.setBackgroundColor(Color.parseColor("#4e348b"));
                 Log.i("MAIN", "log");
-                String displayText="";
+                String displayText = "";
                 String deviceName = sharedPreferences.getString("deviceName", "exists");
                 String deviceType = sharedPreferences.getString("deviceType", "exists");
                 String deviceVendor = sharedPreferences.getString("deviceVendor", "exists");
 
-                displayText = displayText + "Device name: "+ deviceName + "\n";
-                displayText = displayText + "Device type: " + deviceType+ "\n";
+                displayText = displayText + "Device name: " + deviceName + "\n";
+                displayText = displayText + "Device type: " + deviceType + "\n";
                 displayText = displayText + "Device vendor: " + deviceVendor + "\n";
                 System.out.println(displayText);
                 Toast toast = new Toast(MainActivity.this);
@@ -134,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        ImageButton folderbutton =  findViewById(R.id.setfolder);
+        ImageButton folderbutton = findViewById(R.id.setfolder);
 
         folderbutton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -144,9 +133,7 @@ public class MainActivity extends AppCompatActivity {
         });
         SharedPreferences sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
 
-        Log.i("SHAREDPREF",sharedPreferences.getString("locationUri","none"));
-
-        String dir = sharedPreferences.getString("locationUri","none");
+        Log.i("SHAREDPREF", sharedPreferences.getString("locationUri", "none"));
 
 
     }
@@ -159,17 +146,18 @@ public class MainActivity extends AppCompatActivity {
 
         startActivityForResult(intent, ACCESS_URI);
     }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent resultData) {
         super.onActivityResult(requestCode, resultCode, resultData);
-        Log.i("RETURN","U RETURNU");
+        Log.i("RETURN", "U RETURNU");
         if (requestCode == ACCESS_URI
                 && resultCode == Activity.RESULT_OK) {
             // The result data contains a URI for the document or directory that
             // the user selected.
             Uri uri = null;
-            Log.i("RESULT","IN result");
+            Log.i("RESULT", "IN result");
             if (resultData != null) {
                 uri = resultData.getData();
                 final int takeFlags = resultData.getFlags()
@@ -184,12 +172,10 @@ public class MainActivity extends AppCompatActivity {
                 editor.apply();
 
 
-
                 Log.i("URI", locationUri.toString());
 
 
-
-            }else {
+            } else {
                 super.onActivityResult(requestCode, resultCode, resultData);
             }
         }

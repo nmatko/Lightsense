@@ -7,10 +7,13 @@ import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
 import android.util.Log;
+
 import androidx.documentfile.provider.DocumentFile;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
@@ -24,7 +27,7 @@ import java.time.format.DateTimeFormatter;
 
 public class FileOperations {
 
-    private FileOperations(){
+    private FileOperations() {
 
     }
 
@@ -32,12 +35,12 @@ public class FileOperations {
         ContentResolver contentResolver = context.getContentResolver();
 
         try {
-            if(!newFileName.contains(".json")){
-                newFileName +=".json";
+            if (!newFileName.contains(".json")) {
+                newFileName += ".json";
             }
             // Get the document ID of the file
             String documentId = DocumentsContract.getDocumentId(fileUri);
-            if(fileUri.toString().contains(newFileName)){
+            if (fileUri.toString().contains(newFileName)) {
                 return false;
             }
             // Build the URI for the parent directory
@@ -55,11 +58,12 @@ public class FileOperations {
 
         return false; // Rename operation failed
     }
+
     public static DocumentFile createJSON(SharedPreferences sharedPreferences, Context context) throws IOException {
-        Uri jsonUri = Uri.parse(sharedPreferences.getString("locationUri", "none")+"/lightsense");
+        Uri jsonUri = Uri.parse(sharedPreferences.getString("locationUri", "none") + "/lightsense");
         Log.i("JSONuri", String.valueOf(jsonUri));
-        DocumentFile parentDir = DocumentFile.fromTreeUri(context,jsonUri );
-        Log.i("JSONDIR",parentDir.getUri().toString());
+        DocumentFile parentDir = DocumentFile.fromTreeUri(context, jsonUri);
+        Log.i("JSONDIR", parentDir.getUri().toString());
         LocalDateTime currentDateTime = LocalDateTime.now();
 
         // Define a formatter to format the date and time
@@ -67,7 +71,7 @@ public class FileOperations {
 
         // Format the current date and time using the formatter
         String formattedDateTime = currentDateTime.format(formatter);
-        Log.i("LOG",formattedDateTime);
+        Log.i("LOG", formattedDateTime);
 
         if (parentDir != null && parentDir.exists() && parentDir.isDirectory()) {
             // Create a new file named "data.json" within the parent directory
@@ -95,7 +99,8 @@ public class FileOperations {
         }
         return parentDir;
     }
-    public static   void appendJsonData(Context context,String light, String timestamp, Uri fileUri) {
+
+    public static void appendJsonData(Context context, String light, String timestamp, Uri fileUri) {
         // Assume 'fileUri' is the URI of the JSON file obtained through SAF
 
 
@@ -117,6 +122,7 @@ public class FileOperations {
             e.printStackTrace();
         }
     }
+
     public static JSONArray loadExistingJsonContent(Context context, Uri fileUri) throws IOException, JSONException {
         JSONArray jsonArray = new JSONArray();
 
@@ -139,6 +145,7 @@ public class FileOperations {
 
         return jsonArray;
     }
+
     private static void writeJsonToFile(Context context, Uri fileUri, JSONArray jsonArray) throws IOException {
         ParcelFileDescriptor parcelFileDescriptor = context.getContentResolver().openFileDescriptor(fileUri, "w");
         if (parcelFileDescriptor != null) {

@@ -1,5 +1,5 @@
 package com.example.lightsense2;
-import android.animation.Animator;
+
 import android.animation.AnimatorSet;
 import android.animation.LayoutTransition;
 import android.animation.ObjectAnimator;
@@ -11,7 +11,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.media.Image;
+
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -33,19 +33,19 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.documentfile.provider.DocumentFile;
-import java.io.BufferedReader;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+
 import android.os.Handler;
+
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Stack;
+
 
 public class LoggingActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -68,6 +68,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
     private Handler handler;
     private boolean timerRunning;
     private long elapsedTime = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,8 +87,6 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         LayoutTransition layoutTransition = new LayoutTransition();
 
         ObjectAnimator appearingAnimator = ObjectAnimator.ofFloat(null, "alpha", 0f, 1f);
-        ObjectAnimator disappearingAnimator = ObjectAnimator.ofFloat(null, "translationX", 0f, 400f);
-        // Custom disappearing transition combining fade-out and removal
 
         layoutTransition.setDuration(400);
         layoutTransition.setAnimator(LayoutTransition.APPEARING, appearingAnimator);
@@ -99,7 +98,6 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         measureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //getSupportFragmentManager().beginTransaction().replace(R.id.container,measureHome).commit();
                 Intent intent = new Intent(LoggingActivity.this, MeasureActivity.class);
                 startActivity(intent);
             }
@@ -109,7 +107,6 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         homebutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //getSupportFragmentManager().beginTransaction().replace(R.id.container,home).commit();
                 Intent intent = new Intent(LoggingActivity.this, MainActivity.class);
                 startActivity(intent);
             }
@@ -119,8 +116,6 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
             @Override
             public void onClick(View v) {
                 SharedPreferences sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-                String exists = sharedPreferences.getString("noLightSensor", "exists");
-
 
                 String displayText = "";
                 String deviceName = sharedPreferences.getString("deviceName", "exists");
@@ -191,12 +186,13 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         });
 
 
-        listFiles(loadFiles());        // Get the external storage directory URI
+        listFiles(loadFiles());
     }
-    private void displayFile(Uri uri){
-        Log.i("DISP","displaying file " + uri.toString());
+
+    private void displayFile(Uri uri) {
+        Log.i("DISP", "displaying file " + uri.toString());
         DocumentFile file = DocumentFile.fromSingleUri(LoggingActivity.this, uri);
-        Log.i("DISP","file name " + file.getName());
+        Log.i("DISP", "file name " + file.getName());
         LinearLayout logContainer = findViewById(R.id.logcontainer);
 
 
@@ -239,8 +235,8 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                 if (!hasFocus) {
                     String newName = editText.getText().toString();
                     if (!newName.isEmpty() && !newName.equals(file.getName())) {
-                        if (FileOperations.renameFile(getApplicationContext(), file.getUri(), newName)){
-                            toaster("File renamed to " + newName,0);
+                        if (FileOperations.renameFile(getApplicationContext(), file.getUri(), newName)) {
+                            toaster("File renamed to " + newName, 0);
                         }
 
                     } else {
@@ -264,19 +260,18 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
             public void afterTextChanged(Editable editable) {
                 // Called to notify you that the characters within the `Editable` have changed
                 if (editable.toString().contains(".json") && !editable.toString().isEmpty() && !editable.toString().equals(file.getName()) && editable.length() > 5) {
-                    if (FileOperations.renameFile(getApplicationContext(), file.getUri(), editable.toString())){
-                        toaster("File renamed to " + editable.toString(),0);
+                    if (FileOperations.renameFile(getApplicationContext(), file.getUri(), editable.toString())) {
+                        toaster("File renamed to " + editable.toString(), 0);
                     }
                 }
             }
         });
-
-
         Log.i("RECORD", "finished recording");
         logContainer.addView(templateLogView);
 
 
     }
+
     private void fadeOutToSideAndRemove(View slidingView) {
         // Create ObjectAnimators for alpha and translationX properties
         ObjectAnimator fadeOut = ObjectAnimator.ofFloat(slidingView, "alpha", 1f, 0f);
@@ -304,6 +299,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         // Start the animation
         animatorSet.start();
     }
+
     private void startTimer(Button button) {
         timerRunning = true;
         button.setText("Recording");
@@ -326,7 +322,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
     private void stopTimer(Button button) {
         timerRunning = false;
         button.setText("Record");
-        elapsedTime= 0;
+        elapsedTime = 0;
     }
 
     private void updateTimerText(Button button) {
@@ -339,7 +335,8 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         }
 
     }
-    public void toaster(String msg, int length){
+
+    public void toaster(String msg, int length) {
         LayoutInflater inflater = getLayoutInflater();
 
         View layout = inflater.inflate(R.layout.custom_toast_layout, findViewById(R.id.customtoast));
@@ -355,10 +352,11 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         toast.show();
 
     }
-    protected LinkedList<DocumentFile> loadFiles(){
+
+    protected LinkedList<DocumentFile> loadFiles() {
 // Get the number of child views
 
-        Uri locUri = Uri.parse(sharedPreferences.getString("locationUri","none"));
+        Uri locUri = Uri.parse(sharedPreferences.getString("locationUri", "none"));
         DocumentFile folder = DocumentFile.fromTreeUri(this, locUri);
         LinkedList<DocumentFile> linkedFiles = new LinkedList<>();
 
@@ -374,7 +372,8 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         }
         return linkedFiles;
     }
-    protected void listFiles(LinkedList<DocumentFile> files){
+
+    protected void listFiles(LinkedList<DocumentFile> files) {
 
 
         LinearLayout logContainer = findViewById(R.id.logcontainer);
@@ -385,94 +384,95 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
             View childView = logContainer.getChildAt(i);
             logContainer.removeView(childView);
         }
-            if (files != null && files.size() > 0) {
-                for (DocumentFile file : files) {
-                    // Add each file to the list
-                    if (file.getName().contains(".json")){
+        if (files != null && files.size() > 0) {
+            for (DocumentFile file : files) {
+                // Add each file to the list
+                if (file.getName().contains(".json")) {
 
-                        LayoutInflater inflater = LayoutInflater.from(LoggingActivity.this);
-                        View templateLogView = inflater.inflate(R.layout.template_log, logContainer, false);
+                    LayoutInflater inflater = LayoutInflater.from(LoggingActivity.this);
+                    View templateLogView = inflater.inflate(R.layout.template_log, logContainer, false);
 
-                        EditText editText =  templateLogView.findViewById(R.id.filename);
-                        editText.setText(file.getName());
+                    EditText editText = templateLogView.findViewById(R.id.filename);
+                    editText.setText(file.getName());
 
-                        editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                            @Override
-                            public void onFocusChange(View v, boolean hasFocus) {
-                                if (!hasFocus){
-                                    String newName = editText.getText().toString();
+                    editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                        @Override
+                        public void onFocusChange(View v, boolean hasFocus) {
+                            if (!hasFocus) {
+                                String newName = editText.getText().toString();
 
-                                    if (!newName.isEmpty() && !newName.equals(file.getName())) {
-                                        if(FileOperations.renameFile(LoggingActivity.this, file.getUri(), newName)){
-                                            toaster("File renamed to " + newName,0);
-                                        }
-                                    }else{
-                                        editText.setText(file.getName());
+                                if (!newName.isEmpty() && !newName.equals(file.getName())) {
+                                    if (FileOperations.renameFile(LoggingActivity.this, file.getUri(), newName)) {
+                                        toaster("File renamed to " + newName, 0);
                                     }
+                                } else {
+                                    editText.setText(file.getName());
                                 }
                             }
-                        });
-                        editText.addTextChangedListener(new TextWatcher() {
-                            @Override
-                            public void beforeTextChanged(CharSequence charSequence, int start, int before, int count) {
-                                // Called to notify you that the characters within `start` and `start + before` are about to be replaced
-                            }
-                            @Override
-                            public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
-                                // Called to notify you that somewhere within `start` and `start + before` the text has been replaced with new text having length `count`
-                            }
+                        }
+                    });
+                    editText.addTextChangedListener(new TextWatcher() {
+                        @Override
+                        public void beforeTextChanged(CharSequence charSequence, int start, int before, int count) {
+                            // Called to notify you that the characters within `start` and `start + before` are about to be replaced
+                        }
 
-                            @Override
-                            public void afterTextChanged(Editable editable) {
-                                // Called to notify you that the characters within the `Editable` have changed
-                                if (editable.toString().contains(".json") && !editable.toString().isEmpty() && !editable.toString().equals(file.getName())){
-                                    if(FileOperations.renameFile(getApplicationContext(), file.getUri(), editable.toString())){
-                                        toaster("File renamed to " + editable.toString(),0);
-                                    }
+                        @Override
+                        public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
+                            // Called to notify you that somewhere within `start` and `start + before` the text has been replaced with new text having length `count`
+                        }
 
+                        @Override
+                        public void afterTextChanged(Editable editable) {
+                            // Called to notify you that the characters within the `Editable` have changed
+                            if (editable.toString().contains(".json") && !editable.toString().isEmpty() && !editable.toString().equals(file.getName())) {
+                                if (FileOperations.renameFile(getApplicationContext(), file.getUri(), editable.toString())) {
+                                    toaster("File renamed to " + editable.toString(), 0);
+                                }
+
+
+                            }
+                        }
+                    });
+
+                    ImageButton openfolder = templateLogView.findViewById(R.id.openfolder);
+                    openfolder.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            openFileExplorer(file.getUri());
+                            Log.i("OPEN", "opening file" + file.getUri());
+                        }
+                    });
+                    ImageButton deletefile = templateLogView.findViewById(R.id.deletefile);
+
+                    deletefile.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if (file != null && file.exists()) {
+                                DocumentFile filetodel = DocumentFile.fromSingleUri(LoggingActivity.this, file.getUri());
+                                String delname = filetodel.getName();
+                                Log.i("DEL", "attempting to delete");
+                                if (filetodel.delete()) { // Delete the file
+                                    toaster("File " + delname + " has successfully been deleted", 0);
+                                    //logContainer.removeView(templateLogView);
+                                    fadeOutToSideAndRemove(templateLogView);
 
                                 }
                             }
-                        });
+                        }
+                    });
 
-                        ImageButton openfolder = templateLogView.findViewById(R.id.openfolder);
-                        openfolder.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                openFileExplorer(file.getUri());
-                                Log.i("OPEN","opening file" + file.getUri());
-                            }
-                        });
-                        ImageButton deletefile = templateLogView.findViewById(R.id.deletefile);
-
-                        deletefile.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                if (file != null && file.exists()) {
-                                    DocumentFile filetodel = DocumentFile.fromSingleUri(LoggingActivity.this, file.getUri());
-                                    String delname = filetodel.getName();
-                                    Log.i("DEL", "attempting to delete");
-                                    if(filetodel.delete()) { // Delete the file
-                                        toaster("File " + delname + " has successfully been deleted",0);
-                                        //logContainer.removeView(templateLogView);
-                                        fadeOutToSideAndRemove(templateLogView);
-
-                                    }
-                                }
-                            }
-                        });
-
-                        logContainer.addView(templateLogView);
-                    }else {
-                        file.delete();
-                    }
+                    logContainer.addView(templateLogView);
+                } else {
+                    file.delete();
                 }
-            }else {
-
-                toaster("You have no recordings to be displayed. Press record to start a recording.",1);
             }
+        } else {
 
+            toaster("You have no recordings to be displayed. Press record to start a recording.", 1);
         }
+
+    }
 
     private void openFileExplorer(Uri uri) {
         // Convert the URI string to a URI object
@@ -494,11 +494,12 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         super.onStart();
         Log.i("onSTART", "u on startu");
     }
+
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_LIGHT) {
 
-            if (clickCnt%2 == 1) {
+            if (clickCnt % 2 == 1) {
                 Log.i("LIGHT", String.valueOf(event.values[0]));
 
                 LocalDateTime currentDateTime = LocalDateTime.now();
@@ -508,7 +509,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
 
                 // Format the current date and time using the formatter
                 String formattedDateTime = currentDateTime.format(formatter);
-                Log.i("LOG",formattedDateTime);
+                Log.i("LOG", formattedDateTime);
 
                 // Now 'date' contains the date/time in a human-readable format
                 // You can format it as needed for display or logging
@@ -516,18 +517,18 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
 
                 float lightValue = event.values[0];
 
-                if (writeJson !=null) {
-                        FileOperations.appendJsonData(getApplicationContext(),String.valueOf(lightValue),formattedDateTime, writeJson);
+                if (writeJson != null) {
+                    FileOperations.appendJsonData(getApplicationContext(), String.valueOf(lightValue), formattedDateTime, writeJson);
 
-                        Log.i("WRITE", "successfull writing");
+                    Log.i("WRITE", "successfull writing");
 
                 }
-            }else {
-                if (outputStream !=null) {
+            } else {
+                if (outputStream != null) {
                     try {
                         outputStream.close();
                     } catch (IOException e) {
-                        Log.e("OUTPUT","greska u outputu");
+                        Log.e("OUTPUT", "greska u outputu");
                         throw new RuntimeException(e);
                     }
                 }
@@ -549,6 +550,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         super.onPause();
         sensorManager.unregisterListener(this);
     }
+
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
