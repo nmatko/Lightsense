@@ -11,13 +11,10 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-
 import android.net.Uri;
 import android.os.Bundle;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Message;
 import android.provider.DocumentsContract;
 import android.text.Editable;
@@ -32,20 +29,15 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.documentfile.provider.DocumentFile;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-
 import android.os.Handler;
-
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedList;
-
 
 public class LoggingActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -227,28 +219,33 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         });
 
         EditText editText = templateLogView.findViewById(R.id.filename);
-        editText.setText(file.getName());
+        editText.setText(file.getName().replaceFirst(".json",""));
 
         editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus) {
                     String newName = editText.getText().toString();
-                    if (!newName.isEmpty() && !newName.equals(file.getName())) {
+                    String oldName = "";
+                    if(file.exists()){
+                        oldName = file.getName().replaceAll(".json", "");
+                    }
+                    if (!newName.isEmpty() && !newName.equals(oldName)) {
                         if (FileOperations.renameFile(getApplicationContext(), file.getUri(), newName)) {
                             toaster("File renamed to " + newName, 0);
                         }
 
                     } else {
-                        editText.setText(file.getName());
+                        editText.setText(file.getName().replaceAll(".json", ""));
                     }
                 }
             }
         });
         editText.addTextChangedListener(new TextWatcher() {
+            String oldTxt;
             @Override
             public void beforeTextChanged(CharSequence charSequence, int start, int before, int count) {
-                // Called to notify you that the characters within `start` and `start + before` are about to be replaced
+                oldTxt = charSequence.toString();
             }
 
             @Override
@@ -259,7 +256,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
             @Override
             public void afterTextChanged(Editable editable) {
                 // Called to notify you that the characters within the `Editable` have changed
-                if (editable.toString().contains(".json") && !editable.toString().isEmpty() && !editable.toString().equals(file.getName()) && editable.length() > 5) {
+                if (editable.toString().endsWith(".json") && !editable.toString().isEmpty() && !editable.toString().equals(file.getName()) && editable.length() > 5 && !oldTxt.endsWith(".json")) {
                     if (FileOperations.renameFile(getApplicationContext(), file.getUri(), editable.toString())) {
                         toaster("File renamed to " + editable.toString(), 0);
                     }
@@ -393,28 +390,34 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                     View templateLogView = inflater.inflate(R.layout.template_log, logContainer, false);
 
                     EditText editText = templateLogView.findViewById(R.id.filename);
-                    editText.setText(file.getName());
+                    editText.setText(file.getName().replaceFirst(".json",""));
 
                     editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
                         @Override
                         public void onFocusChange(View v, boolean hasFocus) {
                             if (!hasFocus) {
                                 String newName = editText.getText().toString();
+                                String oldName = "";
+                                if(file.exists()){
+                                    oldName = file.getName().replaceAll(".json", "");
+                                }
 
-                                if (!newName.isEmpty() && !newName.equals(file.getName())) {
+                                if (!newName.isEmpty() && !newName.equals(oldName)){
                                     if (FileOperations.renameFile(LoggingActivity.this, file.getUri(), newName)) {
                                         toaster("File renamed to " + newName, 0);
                                     }
                                 } else {
-                                    editText.setText(file.getName());
+                                    editText.setText(file.getName().replaceAll(".json", ""));
                                 }
                             }
                         }
                     });
                     editText.addTextChangedListener(new TextWatcher() {
+                        String oldTxt;
                         @Override
                         public void beforeTextChanged(CharSequence charSequence, int start, int before, int count) {
                             // Called to notify you that the characters within `start` and `start + before` are about to be replaced
+                            oldTxt = charSequence.toString();
                         }
 
                         @Override
@@ -425,7 +428,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                         @Override
                         public void afterTextChanged(Editable editable) {
                             // Called to notify you that the characters within the `Editable` have changed
-                            if (editable.toString().contains(".json") && !editable.toString().isEmpty() && !editable.toString().equals(file.getName())) {
+                            if (editable.toString().endsWith(".json") && !editable.toString().isEmpty() && !editable.toString().equals(file.getName()) && editable.length() > 5 && !oldTxt.endsWith(".json")) {
                                 if (FileOperations.renameFile(getApplicationContext(), file.getUri(), editable.toString())) {
                                     toaster("File renamed to " + editable.toString(), 0);
                                 }
