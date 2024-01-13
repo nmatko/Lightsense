@@ -23,4 +23,16 @@
     <string name="title_activity_measure">MeasureActivity</string>
     <string name="title_activity_logging">LoggingActivity</string>
     <string name="you_have_no_recordings_to_be_displayed_press_record_to_start_a_recording">You have no recordings to be displayed. Press record to start a recording.</string>
+    <string name="quick_introduction">Quick introduction to the app:</string>
+    <string name="info">This app allows you to use the your device\'s light sensor in order to display the current light level or to record light levels.</string>
+
+    <string name="setup">Before using the app it is recommended to choose the folder in which your recordings will be saved.
+        To do that simply click on the folder icon in the top right corner and choose a (safe) folder or create a new one which is recommended.</string>
+    <string name="using_app">When measuring you can reset the "MIN" and "MAX" values with the reset button.</string>
+
+    <string name="recording">After making a recording you can rename it by typing ".json" or by changing focus to another recording.
+        You can also delete the recordings and open the previously chosen folder for saving.</string>
+
+
+
 </resources>

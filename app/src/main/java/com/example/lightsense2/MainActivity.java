@@ -54,8 +54,6 @@ public class MainActivity extends AppCompatActivity {
 
         setManufacturerInfo();
 
-        getSupportFragmentManager().beginTransaction().replace(R.id.container, home).commit();
-
 
         ImageButton measureButton = bottomNavigationView.findViewById(R.id.measurebutton);
         measureButton.setOnClickListener(new View.OnClickListener() {
