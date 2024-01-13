@@ -1,4 +1,5 @@
 package com.example.lightsense2;
+import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.LayoutTransition;
 import android.animation.ObjectAnimator;
@@ -81,6 +82,19 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
 
         ImageButton measureButton = bottomNavigationView.findViewById(R.id.measurebutton);
 
+        LinearLayout logCon = findViewById(R.id.logcontainer);
+        LayoutTransition layoutTransition = new LayoutTransition();
+
+        ObjectAnimator appearingAnimator = ObjectAnimator.ofFloat(null, "alpha", 0f, 1f);
+        ObjectAnimator disappearingAnimator = ObjectAnimator.ofFloat(null, "translationX", 0f, 400f);
+        // Custom disappearing transition combining fade-out and removal
+
+        layoutTransition.setDuration(400);
+        layoutTransition.setAnimator(LayoutTransition.APPEARING, appearingAnimator);
+        layoutTransition.setAnimator(LayoutTransition.CHANGE_DISAPPEARING, null);
+
+        logCon.setLayoutTransition(layoutTransition);
+
 
         measureButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -122,7 +136,10 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         });
 
         Button recordbutton = findViewById(R.id.recordbutton);
-
+        String hexColor = "#4e348b";
+        int color = Color.parseColor(hexColor);
+        recordbutton.setBackgroundColor(color);
+        recordbutton.setTextColor(Color.WHITE);
         handler = new Handler(new Handler.Callback() {
             @Override
             public boolean handleMessage(@NonNull Message msg) {
@@ -181,9 +198,6 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         DocumentFile file = DocumentFile.fromSingleUri(LoggingActivity.this, uri);
         Log.i("DISP","file name " + file.getName());
         LinearLayout logContainer = findViewById(R.id.logcontainer);
-        LayoutTransition layoutTransition = new LayoutTransition();
-        logContainer.setLayoutTransition(layoutTransition);
-
 
 
         LayoutInflater inflater = LayoutInflater.from(LoggingActivity.this);
@@ -209,8 +223,8 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                     if (file.delete()) { // Delete the file
                         toaster("File " + delname + " has successfully been deleted", 0);
                         //fadeOutToSide(templateLogView);
-                        logContainer.removeView(templateLogView);
-
+                        //logContainer.removeView(templateLogView);
+                        fadeOutToSideAndRemove(templateLogView);
                     }
                 }
             }
@@ -225,7 +239,9 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                 if (!hasFocus) {
                     String newName = editText.getText().toString();
                     if (!newName.isEmpty() && !newName.equals(file.getName())) {
-                        FileOperations.renameFile(getApplicationContext(), file.getUri(), newName);
+                        if (FileOperations.renameFile(getApplicationContext(), file.getUri(), newName)){
+                            toaster("File renamed to " + newName,0);
+                        }
 
                     } else {
                         editText.setText(file.getName());
@@ -248,7 +264,9 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
             public void afterTextChanged(Editable editable) {
                 // Called to notify you that the characters within the `Editable` have changed
                 if (editable.toString().contains(".json") && !editable.toString().isEmpty() && !editable.toString().equals(file.getName()) && editable.length() > 5) {
-                    FileOperations.renameFile(getApplicationContext(), file.getUri(), editable.toString());
+                    if (FileOperations.renameFile(getApplicationContext(), file.getUri(), editable.toString())){
+                        toaster("File renamed to " + editable.toString(),0);
+                    }
                 }
             }
         });
@@ -258,6 +276,33 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         logContainer.addView(templateLogView);
 
 
+    }
+    private void fadeOutToSideAndRemove(View slidingView) {
+        // Create ObjectAnimators for alpha and translationX properties
+        ObjectAnimator fadeOut = ObjectAnimator.ofFloat(slidingView, "alpha", 1f, 0f);
+        ObjectAnimator slideOut = ObjectAnimator.ofFloat(slidingView, "translationX", 0, slidingView.getWidth());
+
+        // Combine the animations into an AnimatorSet
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet.playTogether(fadeOut, slideOut);
+        animatorSet.setDuration(700); // Set the duration of the animation in milliseconds
+
+        // Set up a listener to remove the view when the animation ends
+        animatorSet.addListener(new android.animation.AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(android.animation.Animator animation) {
+                super.onAnimationEnd(animation);
+
+                // Remove the view from its parent
+                ViewGroup parentView = (ViewGroup) slidingView.getParent();
+                if (parentView != null) {
+                    parentView.removeView(slidingView);
+                }
+            }
+        });
+
+        // Start the animation
+        animatorSet.start();
     }
     private void startTimer(Button button) {
         timerRunning = true;
@@ -333,8 +378,6 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
 
 
         LinearLayout logContainer = findViewById(R.id.logcontainer);
-        LayoutTransition layoutTransition = new LayoutTransition();
-        logContainer.setLayoutTransition(layoutTransition);
         int childCount = logContainer.getChildCount();
 
 // Iterate through each child and remove it
@@ -361,7 +404,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
 
                                     if (!newName.isEmpty() && !newName.equals(file.getName())) {
                                         if(FileOperations.renameFile(LoggingActivity.this, file.getUri(), newName)){
-                                            Log.i("RENAME","file renamed to " + newName);
+                                            toaster("File renamed to " + newName,0);
                                         }
                                     }else{
                                         editText.setText(file.getName());
@@ -384,7 +427,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                                 // Called to notify you that the characters within the `Editable` have changed
                                 if (editable.toString().contains(".json") && !editable.toString().isEmpty() && !editable.toString().equals(file.getName())){
                                     if(FileOperations.renameFile(getApplicationContext(), file.getUri(), editable.toString())){
-                                        Log.i("RENAME","file renamed to " + editable);
+                                        toaster("File renamed to " + editable.toString(),0);
                                     }
 
 
@@ -411,7 +454,10 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                                     Log.i("DEL", "attempting to delete");
                                     if(filetodel.delete()) { // Delete the file
                                         toaster("File " + delname + " has successfully been deleted",0);
-                                        logContainer.removeView(templateLogView);                                    }
+                                        //logContainer.removeView(templateLogView);
+                                        fadeOutToSideAndRemove(templateLogView);
+
+                                    }
                                 }
                             }
                         });
@@ -428,31 +474,6 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
 
         }
 
-    private void fadeOutToSide(View fadingView) {
-        // Create ObjectAnimators for alpha and translationX properties
-        ObjectAnimator fadeOut = ObjectAnimator.ofFloat(fadingView, "alpha", 1f, 0f);
-        ObjectAnimator slideOut = ObjectAnimator.ofFloat(fadingView, "translationX", 0, fadingView.getWidth());
-
-        // Combine the animations into an AnimatorSet
-        AnimatorSet animatorSet = new AnimatorSet();
-        animatorSet.playTogether(fadeOut, slideOut);
-        animatorSet.setDuration(1000); // Set the duration of the animation in milliseconds
-        animatorSet.addListener(new android.animation.AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(android.animation.Animator animation) {
-                super.onAnimationEnd(animation);
-
-                // Remove the view from its parent
-                ViewGroup parentView = (ViewGroup) fadingView.getParent();
-                if (parentView != null) {
-                    parentView.removeView(fadingView);
-                }
-            }
-        });
-        // Start the animation
-        animatorSet.start();
-       // logContainer.removeView(fadingView);
-    }
     private void openFileExplorer(Uri uri) {
         // Convert the URI string to a URI object
 
