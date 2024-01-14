@@ -13,9 +13,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import android.os.Message;
 import android.provider.DocumentsContract;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -38,6 +36,7 @@ import android.os.Handler;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.Locale;
 
 public class LoggingActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -67,7 +66,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         setContentView(R.layout.activity_logging_light);
         bottomNavigationView = findViewById(R.id.bottom_nav);
         jsonCount = -1;
-        LinkedList<DocumentFile> newJSONS = new LinkedList<>();
+
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
 
@@ -87,39 +86,30 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         logCon.setLayoutTransition(layoutTransition);
 
 
-        measureButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(LoggingActivity.this, MeasureActivity.class);
-                startActivity(intent);
-            }
+        measureButton.setOnClickListener(v -> {
+            Intent intent = new Intent(LoggingActivity.this, MeasureActivity.class);
+            startActivity(intent);
         });
         ImageButton homebutton = bottomNavigationView.findViewById(R.id.homebutton);
 
-        homebutton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(LoggingActivity.this, MainActivity.class);
-                startActivity(intent);
-            }
+        homebutton.setOnClickListener(v -> {
+            Intent intent = new Intent(LoggingActivity.this, MainActivity.class);
+            startActivity(intent);
         });
         ImageButton informationbtn = findViewById(R.id.informationbutton);
-        informationbtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SharedPreferences sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        informationbtn.setOnClickListener(v -> {
+            SharedPreferences sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
 
-                String displayText = "";
-                String deviceName = sharedPreferences.getString("deviceName", "exists");
-                String deviceType = sharedPreferences.getString("deviceType", "exists");
-                String deviceVendor = sharedPreferences.getString("deviceVendor", "exists");
+            String displayText = "";
+            String deviceName = sharedPreferences.getString("deviceName", "exists");
+            String deviceType = sharedPreferences.getString("deviceType", "exists");
+            String deviceVendor = sharedPreferences.getString("deviceVendor", "exists");
 
-                displayText = displayText + "Device name: " + deviceName + "\n";
-                displayText = displayText + "Device type: " + deviceType + "\n";
-                displayText = displayText + "Device vendor: " + deviceVendor + "\n";
-                System.out.println(displayText);
-                toaster(displayText, 1);
-            }
+            displayText = displayText + "Device name: " + deviceName + "\n";
+            displayText = displayText + "Device type: " + deviceType + "\n";
+            displayText = displayText + "Device vendor: " + deviceVendor + "\n";
+            System.out.println(displayText);
+            toaster(displayText, 1);
         });
 
         Button recordbutton = findViewById(R.id.recordbutton);
@@ -127,54 +117,47 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         int color = Color.parseColor(hexColor);
         recordbutton.setBackgroundColor(color);
         recordbutton.setTextColor(Color.WHITE);
-        handler = new Handler(new Handler.Callback() {
-            @Override
-            public boolean handleMessage(@NonNull Message msg) {
-                updateTimerText(recordbutton);
-                return true;
-            }
+        handler = new Handler(msg -> {
+            updateTimerText(recordbutton);
+            return true;
         });
 
 
-        recordbutton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (clickCnt % 2 == 0) {
-                    locationUri = Uri.parse(sharedPreferences.getString("locationUri", "none"));
-                    if (locationUri.toString().equals("none")) {
-                        toaster("Please set the preffered directory for storing recordings", 1);
-                    }
-                    clickCnt++;
-                    jsonCount++;
-                    recordbutton.setBackgroundColor(Color.RED);
-                    recordbutton.setTextColor(Color.WHITE);
-                    SharedPreferences sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-
-                    try {
-                        DocumentFile currJson = FileOperations.createJSON(sharedPreferences, LoggingActivity.this);
-                        writeJson = currJson.getUri();
-                        newJSONS.add(currJson);
-                        Log.i("JSONcr", currJson.getUri().toString());
-                    } catch (IOException e) {
-                        Log.e("JSON", "failed to create");
-                        throw new RuntimeException(e);
-                    }
-                    startTimer(recordbutton);
-                    Log.i("RECORD", "recording");
-                } else {
-                    clickCnt++;
-                    String hexColor = "#4e348b";
-                    int color = Color.parseColor(hexColor);
-                    recordbutton.setText("Record");
-                    recordbutton.setTextColor(Color.WHITE);
-                    recordbutton.setBackgroundColor(color);
-
-                    displayFile(writeJson);
-                    stopTimer(recordbutton);
+        recordbutton.setOnClickListener(v -> {
+            if (clickCnt % 2 == 0) {
+                locationUri = Uri.parse(sharedPreferences.getString("locationUri", "none"));
+                if (locationUri.toString().equals("none")) {
+                    toaster("Please set the preffered directory for storing recordings", 1);
                 }
+                clickCnt++;
+                jsonCount++;
+                recordbutton.setBackgroundColor(Color.RED);
+                recordbutton.setTextColor(Color.WHITE);
+                SharedPreferences sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
 
+                try {
+                    DocumentFile currJson = FileOperations.createJSON(sharedPreferences, LoggingActivity.this);
+                    writeJson = currJson.getUri();
+                    Log.i("JSONcr", currJson.getUri().toString());
+                } catch (IOException e) {
+                    Log.e("JSON", "failed to create");
+                    throw new RuntimeException(e);
+                }
+                startTimer(recordbutton);
+                Log.i("RECORD", "recording");
+            } else {
+                clickCnt++;
+                String hexColor1 = "#4e348b";
+                int color1 = Color.parseColor(hexColor1);
+                recordbutton.setText("Record");
+                recordbutton.setTextColor(Color.WHITE);
+                recordbutton.setBackgroundColor(color1);
 
+                displayFile(writeJson);
+                stopTimer(recordbutton);
             }
+
+
         });
 
 
@@ -200,27 +183,17 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
 
         ImageButton openfolder = templateLogView.findViewById(R.id.openfolder);
 
-        openfolder.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openFileExplorer(locationUri);
-            }
-        });
+        openfolder.setOnClickListener(v -> openFileExplorer(locationUri));
         ImageButton deletefile = templateLogView.findViewById(R.id.deletefile);
 
-        deletefile.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        deletefile.setOnClickListener(v -> {
 
-                if (file != null && file.exists()) {
-                    String delname = file.getName();
-                    Log.i("DEL", "attempting to delete");
-                    if (file.delete()) { // Delete the file
-                        toaster("File " + delname + " has successfully been deleted", 0);
-                        //fadeOutToSide(templateLogView);
-                        //logContainer.removeView(templateLogView);
-                        fadeOutToSideAndRemove(templateLogView);
-                    }
+            if (file != null && file.exists()) {
+                String delname = file.getName();
+                Log.i("DEL", "attempting to delete");
+                if (file.delete()) { // Delete the file
+                    toaster("File " + delname + " has successfully been deleted", 0);
+                    fadeOutToSideAndRemove(templateLogView);
                 }
             }
         });
@@ -228,26 +201,25 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         EditText editText = templateLogView.findViewById(R.id.filename);
         editText.setText(file.getName().replaceFirst(".json",""));
 
-        editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
-                    String newName = editText.getText().toString().replaceAll(".json", "");
-                    String oldName = "";
-                    if(file.exists()){
-                        oldName = file.getName().replaceAll(".json", "");
-                    }
+        editText.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                String newName = editText.getText().toString().replaceAll(".json", "");
+                String oldName = "";
+                if(file.exists()){
+                    oldName = file.getName().replaceAll(".json", "");
+                }
 
-                    if (!newName.isEmpty() && !newName.equals(oldName)){
-                        if (file.renameTo(newName + ".json")) {
-                            toaster("File renamed to " + newName, 0);
-                            editText.setText(file.getName().replaceAll(".json", ""));
-                        }else{
+                if (!newName.isEmpty() && !newName.equals(oldName)){
+                    if (file.renameTo(newName + ".json")) {
+                        toaster("File renamed to " + newName, 0);
+                        editText.setText(file.getName().replaceAll(".json", ""));
+                    }else{
+                        if(file.exists()) {
                             editText.setText(file.getName().replaceAll(".json", ""));
                         }
-                    } else {
-                        editText.setText(file.getName().replaceAll(".json", ""));
                     }
+                } else {
+                    editText.setText(file.getName().replaceAll(".json", ""));
                 }
             }
         });
@@ -269,7 +241,8 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                 // Called to notify you that the characters within the `Editable` have changed
                 if (editable.toString().endsWith(".json") && !editable.toString().isEmpty() && !editable.toString().equals(file.getName()) && editable.length() > 5 && !oldTxt.endsWith(".json")) {
                     if (file.renameTo(editable.toString())) {
-                        toaster("File renamed to " + editable.toString(), 0);
+                        toaster("File renamed to " + editable, 0);
+                        editText.setText(file.getName().replaceAll(".json", ""));
                     }
 
 
@@ -313,17 +286,14 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
     private void startTimer(Button button) {
         timerRunning = true;
         button.setText("Recording");
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (timerRunning) {
-                    try {
-                        Thread.sleep(500);
-                        elapsedTime += 500;
-                        handler.sendEmptyMessage(0);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+        new Thread(() -> {
+            while (timerRunning) {
+                try {
+                    Thread.sleep(500);
+                    elapsedTime += 500;
+                    handler.sendEmptyMessage(0);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         }).start();
@@ -339,7 +309,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         int seconds = (int) (elapsedTime / 1000) % 60;
         int minutes = (int) ((elapsedTime / (1000 * 60)) % 60);
         int hours = (int) ((elapsedTime / (1000 * 60 * 60)) % 24);
-        String timeFormatted = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+        String timeFormatted = String.format(Locale.ENGLISH,"%02d:%02d:%02d", hours, minutes, seconds);
         if (timerRunning) {
             button.setText(timeFormatted);
         }
@@ -405,26 +375,23 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                     EditText editText = templateLogView.findViewById(R.id.filename);
                     editText.setText(file.getName().replaceFirst(".json",""));
 
-                    editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                        @Override
-                        public void onFocusChange(View v, boolean hasFocus) {
-                            if (!hasFocus) {
-                                String newName = editText.getText().toString().replaceAll(".json", "");
-                                String oldName = "";
-                                if(file.exists()){
-                                    oldName = file.getName().replaceAll(".json", "");
-                                }
+                    editText.setOnFocusChangeListener((v, hasFocus) -> {
+                        if (!hasFocus) {
+                            String newName = editText.getText().toString().replaceAll(".json", "");
+                            String oldName = "";
+                            if(file.exists()){
+                                oldName = file.getName().replaceAll(".json", "");
+                            }
 
-                                if (!newName.isEmpty() && !newName.equals(oldName)){
-                                    if (file.renameTo(newName + ".json")) {
-                                        toaster("File renamed to " + newName, 0);
-                                        editText.setText(file.getName().replaceAll(".json", ""));
-                                    }else{
-                                        editText.setText(file.getName().replaceAll(".json", ""));
-                                    }
-                                } else {
+                            if (!newName.isEmpty() && !newName.equals(oldName)){
+                                if (file.renameTo(newName + ".json")) {
+                                    toaster("File renamed to " + newName, 0);
+                                    editText.setText(file.getName().replaceAll(".json", ""));
+                                }else{
                                     editText.setText(file.getName().replaceAll(".json", ""));
                                 }
+                            } else {
+                                editText.setText(file.getName().replaceAll(".json", ""));
                             }
                         }
                     });
@@ -446,7 +413,8 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                             // Called to notify you that the characters within the `Editable` have changed
                             if (editable.toString().endsWith(".json") && !editable.toString().isEmpty() && !editable.toString().equals(file.getName()) && editable.length() > 5 && !oldTxt.endsWith(".json")) {
                                 if (file.renameTo(editable.toString())) {
-                                    toaster("File renamed to " + editable.toString(), 0);
+                                    toaster("File renamed to " + editable, 0);
+                                    editText.setText(file.getName().replaceAll(".json", ""));
                                 }
 
 
@@ -455,28 +423,21 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                     });
 
                     ImageButton openfolder = templateLogView.findViewById(R.id.openfolder);
-                    openfolder.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            openFileExplorer(file.getUri());
-                            Log.i("OPEN", "opening file" + file.getUri());
-                        }
+                    openfolder.setOnClickListener(v -> {
+                        openFileExplorer(file.getUri());
+                        Log.i("OPEN", "opening file" + file.getUri());
                     });
                     ImageButton deletefile = templateLogView.findViewById(R.id.deletefile);
 
-                    deletefile.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            if (file != null && file.exists()) {
-                                DocumentFile filetodel = DocumentFile.fromSingleUri(LoggingActivity.this, file.getUri());
-                                String delname = filetodel.getName();
-                                Log.i("DEL", "attempting to delete");
-                                if (filetodel.delete()) { // Delete the file
-                                    toaster("File " + delname + " has successfully been deleted", 0);
-                                    //logContainer.removeView(templateLogView);
-                                    fadeOutToSideAndRemove(templateLogView);
+                    deletefile.setOnClickListener(v -> {
+                        if (file != null && file.exists()) {
+                            DocumentFile filetodel = DocumentFile.fromSingleUri(LoggingActivity.this, file.getUri());
+                            String delname = filetodel.getName();
+                            Log.i("DEL", "attempting to delete");
+                            if (filetodel.delete()) { // Delete the file
+                                toaster("File " + delname + " has successfully been deleted", 0);
+                                fadeOutToSideAndRemove(templateLogView);
 
-                                }
                             }
                         }
                     });
@@ -553,7 +514,6 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
                 }
             }
 
-            // Do something with the light value (e.g., display it, perform actions based on the light level)
         }
     }
 
@@ -561,6 +521,7 @@ public class LoggingActivity extends AppCompatActivity implements SensorEventLis
         super.onResume();
         if (lightSensor != null) {
             sensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
+
         }
     }
 
